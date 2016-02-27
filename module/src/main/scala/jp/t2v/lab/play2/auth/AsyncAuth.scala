@@ -6,7 +6,7 @@ import scala.concurrent.{ExecutionContext, Future}
 trait AsyncAuth {
     self: AuthConfig with Controller =>
 
-  def authorized(authority: Authority)(implicit request: RequestHeader, context: ExecutionContext): Future[Either[Result, (User, ResultUpdater)]] = {
+  def authorized(authority: AuthAuthority)(implicit request: RequestHeader, context: ExecutionContext): Future[Either[Result, (AuthUser, ResultUpdater)]] = {
     restoreUser collect {
       case (Some(user), resultUpdater) => Right(user -> resultUpdater)
     } recoverWith {
@@ -21,7 +21,7 @@ trait AsyncAuth {
     }
   }
 
-  private[auth] def restoreUser(implicit request: RequestHeader, context: ExecutionContext): Future[(Option[User], ResultUpdater)] = {
+  private[auth] def restoreUser(implicit request: RequestHeader, context: ExecutionContext): Future[(Option[AuthUser], ResultUpdater)] = {
     (for {
       token  <- extractToken(request)
     } yield for {

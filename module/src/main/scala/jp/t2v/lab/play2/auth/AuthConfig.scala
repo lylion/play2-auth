@@ -6,17 +6,17 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait AuthConfig {
 
-  type Id
+  type AuthId
 
-  type User
+  type AuthUser
 
-  type Authority
+  type AuthAuthority
 
-  implicit def idTag: ClassTag[Id]
+  implicit def idTag: ClassTag[AuthId]
 
   def sessionTimeoutInSeconds: Int
 
-  def resolveUser(id: Id)(implicit context: ExecutionContext): Future[Option[User]]
+  def resolveUser(id: AuthId)(implicit context: ExecutionContext): Future[Option[AuthUser]]
 
   def loginSucceeded(request: RequestHeader)(implicit context: ExecutionContext): Future[Result]
 
@@ -24,11 +24,11 @@ trait AuthConfig {
 
   def authenticationFailed(request: RequestHeader)(implicit context: ExecutionContext): Future[Result]
 
-  def authorizationFailed(request: RequestHeader, user: User, authority: Option[Authority])(implicit context: ExecutionContext): Future[Result]
+  def authorizationFailed(request: RequestHeader, user: AuthUser, authority: Option[AuthAuthority])(implicit context: ExecutionContext): Future[Result]
 
-  def authorize(user: User, authority: Authority)(implicit context: ExecutionContext): Future[Boolean]
+  def authorize(user: AuthUser, authority: AuthAuthority)(implicit context: ExecutionContext): Future[Boolean]
 
-  lazy val idContainer: AsyncIdContainer[Id] = AsyncIdContainer(new CacheIdContainer[Id])
+  lazy val idContainer: AsyncIdContainer[AuthId] = AsyncIdContainer(new CacheIdContainer[AuthId])
 
   @deprecated("it will be deleted since 0.14.x. use CookieTokenAccessor constructor", since = "0.13.1")
   final lazy val cookieName: String = throw new AssertionError("use tokenAccessor setting instead.")

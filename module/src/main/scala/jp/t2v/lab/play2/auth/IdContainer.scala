@@ -1,11 +1,11 @@
 package jp.t2v.lab.play2.auth
 
-trait IdContainer[Id] {
+trait IdContainer[AuthId] {
 
-  def startNewSession(userId: Id, timeoutInSeconds: Int): AuthenticityToken
+  def startNewSession(userId: AuthId, timeoutInSeconds: Int): AuthenticityToken
 
   def remove(token: AuthenticityToken): Unit
-  def get(token: AuthenticityToken): Option[Id]
+  def get(token: AuthenticityToken): Option[AuthId]
 
   def prolongTimeout(token: AuthenticityToken, timeoutInSeconds: Int): Unit
 

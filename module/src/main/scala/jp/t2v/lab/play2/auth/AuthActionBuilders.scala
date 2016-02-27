@@ -5,8 +5,8 @@ import scala.concurrent.Future
 
 trait AuthActionBuilders extends AsyncAuth { self: AuthConfig with Controller =>
 
-  final case class GenericOptionalAuthRequest[+A, R[+_] <: Request[_]](user: Option[User], underlying: R[A]) extends WrappedRequest[A](underlying.asInstanceOf[Request[A]])
-  final case class GenericAuthRequest[+A, R[+_] <: Request[_]](user: User, underlying: R[A]) extends WrappedRequest[A](underlying.asInstanceOf[Request[A]])
+  final case class GenericOptionalAuthRequest[+A, R[+_] <: Request[_]](user: Option[AuthUser], underlying: R[A]) extends WrappedRequest[A](underlying.asInstanceOf[Request[A]])
+  final case class GenericAuthRequest[+A, R[+_] <: Request[_]](user: AuthUser, underlying: R[A]) extends WrappedRequest[A](underlying.asInstanceOf[Request[A]])
 
   final case class GenericOptionalAuthFunction[R[+_] <: Request[_]]() extends ActionFunction[R, ({type L[+A] = GenericOptionalAuthRequest[A, R]})#L] {
     def invokeBlock[A](request: R[A], block: GenericOptionalAuthRequest[A, R] => Future[Result]) = {
@@ -30,7 +30,7 @@ trait AuthActionBuilders extends AsyncAuth { self: AuthConfig with Controller =>
     }
   }
 
-  final case class GenericAuthorizationFilter[R[+_] <: Request[_]](authority: Authority) extends ActionFilter[({type L[+B] = GenericAuthRequest[B, R]})#L] {
+  final case class GenericAuthorizationFilter[R[+_] <: Request[_]](authority: AuthAuthority) extends ActionFilter[({type L[+B] = GenericAuthRequest[B, R]})#L] {
     override protected def filter[A](request: GenericAuthRequest[A, R]): Future[Option[Result]] = {
       implicit val ctx = executionContext
       authorize(request.user, authority) collect {
@@ -49,7 +49,7 @@ trait AuthActionBuilders extends AsyncAuth { self: AuthConfig with Controller =>
     composeOptionalAuthAction[R](builder).andThen[({type L[+A] = GenericAuthRequest[A, R]})#L](GenericAuthenticationRefiner[R]())
   }
 
-  final def composeAuthorizationAction[R[+_] <: Request[_]](builder: ActionBuilder[R])(authority: Authority): ActionBuilder[({type L[+A] = GenericAuthRequest[A, R]})#L] = {
+  final def composeAuthorizationAction[R[+_] <: Request[_]](builder: ActionBuilder[R])(authority: AuthAuthority): ActionBuilder[({type L[+A] = GenericAuthRequest[A, R]})#L] = {
     composeAuthenticationAction(builder).andThen[({type L[+A] = GenericAuthRequest[A, R]})#L](GenericAuthorizationFilter[R](authority))
   }
 
@@ -57,10 +57,10 @@ trait AuthActionBuilders extends AsyncAuth { self: AuthConfig with Controller =>
   final type AuthRequest[+A] = GenericAuthRequest[A, Request]
   final val OptionalAuthFunction: ActionFunction[Request, OptionalAuthRequest] = GenericOptionalAuthFunction[Request]()
   final val AuthenticationRefiner: ActionRefiner[OptionalAuthRequest, AuthRequest] = GenericAuthenticationRefiner[Request]()
-  final def AuthorizationFilter(authority: Authority): ActionFilter[AuthRequest] = GenericAuthorizationFilter[Request](authority)
+  final def AuthorizationFilter(authority: AuthAuthority): ActionFilter[AuthRequest] = GenericAuthorizationFilter[Request](authority)
 
   final val OptionalAuthAction: ActionBuilder[OptionalAuthRequest] = composeOptionalAuthAction(Action)
   final val AuthenticationAction: ActionBuilder[AuthRequest] = composeAuthenticationAction(Action)
-  final def AuthorizationAction(authority: Authority): ActionBuilder[AuthRequest] = composeAuthorizationAction(Action)(authority)
+  final def AuthorizationAction(authority: AuthAuthority): ActionBuilder[AuthRequest] = composeAuthorizationAction(Action)(authority)
 
 }

@@ -2,14 +2,14 @@ package jp.t2v.lab.play2.auth
 
 import scala.util.control.Exception._
 
-class TransparentIdContainer[Id: ToString: FromString] extends IdContainer[Id] {
+class TransparentIdContainer[AuthId: ToString: FromString] extends IdContainer[AuthId] {
 
-  def startNewSession(userId: Id, timeoutInSeconds: Int) = implicitly[ToString[Id]].apply(userId)
+  def startNewSession(userId: AuthId, timeoutInSeconds: Int) = implicitly[ToString[AuthId]].apply(userId)
 
   def remove(token: AuthenticityToken) {
   }
 
-  def get(token: AuthenticityToken) = implicitly[FromString[Id]].apply(token)
+  def get(token: AuthenticityToken) = implicitly[FromString[AuthId]].apply(token)
 
   def prolongTimeout(token: AuthenticityToken, timeoutInSeconds: Int) {
     // Cookie Id Container does not support timeout.

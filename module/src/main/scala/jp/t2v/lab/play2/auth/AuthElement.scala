@@ -7,8 +7,8 @@ import scala.concurrent.Future
 trait AuthElement extends StackableController with AsyncAuth {
     self: Controller with AuthConfig =>
 
-  private[auth] case object AuthKey extends RequestAttributeKey[User]
-  case object AuthorityKey extends RequestAttributeKey[Authority]
+  private[auth] case object AuthKey extends RequestAttributeKey[AuthUser]
+  case object AuthorityKey extends RequestAttributeKey[AuthAuthority]
 
   override def proceed[A](req: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Future[Result]): Future[Result] = {
     implicit val (r, ctx) = (req, StackActionExecutionContext(req))
@@ -28,14 +28,14 @@ trait AuthElement extends StackableController with AsyncAuth {
     }
   }
 
-  implicit def loggedIn(implicit req: RequestWithAttributes[_]): User = req.get(AuthKey).get
+  implicit def loggedIn(implicit req: RequestWithAttributes[_]): AuthUser = req.get(AuthKey).get
 
 }
 
 trait OptionalAuthElement extends StackableController with AsyncAuth {
     self: Controller with AuthConfig =>
 
-  private[auth] case object AuthKey extends RequestAttributeKey[User]
+  private[auth] case object AuthKey extends RequestAttributeKey[AuthUser]
 
   override def proceed[A](req: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Future[Result]): Future[Result] = {
     implicit val (r, ctx) = (req, StackActionExecutionContext(req))
@@ -45,13 +45,13 @@ trait OptionalAuthElement extends StackableController with AsyncAuth {
     }
   }
 
-  implicit def loggedIn[A](implicit req: RequestWithAttributes[A]): Option[User] = req.get(AuthKey)
+  implicit def loggedIn[A](implicit req: RequestWithAttributes[A]): Option[AuthUser] = req.get(AuthKey)
 }
 
 trait AuthenticationElement extends StackableController with AsyncAuth {
     self: Controller with AuthConfig =>
 
-  private[auth] case object AuthKey extends RequestAttributeKey[User]
+  private[auth] case object AuthKey extends RequestAttributeKey[AuthUser]
 
   override def proceed[A](req: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Future[Result]): Future[Result] = {
     implicit val (r, ctx) = (req, StackActionExecutionContext(req))
@@ -63,6 +63,6 @@ trait AuthenticationElement extends StackableController with AsyncAuth {
     }
   }
 
-  implicit def loggedIn(implicit req: RequestWithAttributes[_]): User = req.get(AuthKey).get
+  implicit def loggedIn(implicit req: RequestWithAttributes[_]): AuthUser = req.get(AuthKey).get
 
 }

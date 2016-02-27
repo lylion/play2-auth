@@ -12,7 +12,7 @@ trait Helpers {
 
   implicit class AuthFakeRequest[A](fakeRequest: FakeRequest[A]) {
 
-    def withLoggedIn(implicit config: AuthConfig): config.Id => FakeRequest[A] = { id =>
+    def withLoggedIn(implicit config: AuthConfig): config.AuthId => FakeRequest[A] = { id =>
       val token = Await.result(config.idContainer.startNewSession(id, config.sessionTimeoutInSeconds)(fakeRequest, global), 10.seconds)
       fakeRequest.withHeaders("PLAY2_AUTH_TEST_TOKEN" -> token)
     }

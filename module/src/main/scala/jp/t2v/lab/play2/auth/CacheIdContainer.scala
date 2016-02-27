@@ -7,13 +7,13 @@ import scala.util.Random
 import java.security.SecureRandom
 import scala.reflect.ClassTag
 
-class CacheIdContainer[Id: ClassTag] extends IdContainer[Id] {
+class CacheIdContainer[AuthId: ClassTag] extends IdContainer[AuthId] {
 
   private[auth] val tokenSuffix = ":token"
   private[auth] val userIdSuffix = ":userId"
   private[auth] val random = new Random(new SecureRandom())
 
-  def startNewSession(userId: Id, timeoutInSeconds: Int): AuthenticityToken = {
+  def startNewSession(userId: AuthId, timeoutInSeconds: Int): AuthenticityToken = {
     removeByUserId(userId)
     val token = generate
     store(token, userId, timeoutInSeconds)
@@ -27,7 +27,7 @@ class CacheIdContainer[Id: ClassTag] extends IdContainer[Id] {
     if (get(token).isDefined) generate else token
   }
 
-  private[auth] def removeByUserId(userId: Id) {
+  private[auth] def removeByUserId(userId: AuthId) {
     Cache.getAs[String](userId.toString + userIdSuffix) foreach unsetToken
     unsetUserId(userId)
   }
@@ -40,13 +40,13 @@ class CacheIdContainer[Id: ClassTag] extends IdContainer[Id] {
   private[auth] def unsetToken(token: AuthenticityToken) {
     Cache.remove(token + tokenSuffix)
   }
-  private[auth] def unsetUserId(userId: Id) {
+  private[auth] def unsetUserId(userId: AuthId) {
     Cache.remove(userId.toString + userIdSuffix)
   }
 
-  def get(token: AuthenticityToken) = Cache.get(token + tokenSuffix).map(_.asInstanceOf[Id])
+  def get(token: AuthenticityToken) = Cache.get(token + tokenSuffix).map(_.asInstanceOf[AuthId])
 
-  private[auth] def store(token: AuthenticityToken, userId: Id, timeoutInSeconds: Int) {
+  private[auth] def store(token: AuthenticityToken, userId: AuthId, timeoutInSeconds: Int) {
     Cache.set(token + tokenSuffix, userId, timeoutInSeconds)
     Cache.set(userId.toString + userIdSuffix, token, timeoutInSeconds)
   }

@@ -8,11 +8,11 @@ import scala.concurrent.{Future, ExecutionContext}
 trait Login {
   self: Controller with AuthConfig =>
 
-  def gotoLoginSucceeded(userId: Id)(implicit request: RequestHeader, ctx: ExecutionContext): Future[Result] = {
+  def gotoLoginSucceeded(userId: AuthId)(implicit request: RequestHeader, ctx: ExecutionContext): Future[Result] = {
     gotoLoginSucceeded(userId, loginSucceeded(request))
   }
 
-  def gotoLoginSucceeded(userId: Id, result: => Future[Result])(implicit request: RequestHeader, ctx: ExecutionContext): Future[Result] = for {
+  def gotoLoginSucceeded(userId: AuthId, result: => Future[Result])(implicit request: RequestHeader, ctx: ExecutionContext): Future[Result] = for {
     token <- idContainer.startNewSession(userId, sessionTimeoutInSeconds)
     r     <- result
   } yield tokenAccessor.put(token)(r)
